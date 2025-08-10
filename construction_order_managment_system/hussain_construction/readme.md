@@ -3,9 +3,9 @@ A comprehensive order management system built with Streamlit for construction bu
 Features
 
 🔐 Secure admin authentication <br/>
-📝 Create and manage orders
-📊 Analytics dashboard with charts
-🖨️ PDF generation for orders and reports
-📈 Real-time statistics
-🔍 Search and filter orders
-💾 Database backup functionality
+📝 Create and manage orders <br/>
+📊 Analytics dashboard with charts <br/>
+🖨️ PDF generation for orders and reports <br/>
+📈 Real-time statistics <br/>
+🔍 Search and filter orders <br/>
+💾 Database backup functionality <br/>
