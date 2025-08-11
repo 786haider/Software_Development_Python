@@ -104,20 +104,36 @@ class PDFGenerator:
         pdf.cell(200, 8, txt=f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=1, align='C')
         pdf.cell(200, 8, txt="Thank you for choosing Hussain Construction!", ln=1, align='C')
         
-        # Convert to bytes - Fixed version
+        # Convert to bytes - FIXED VERSION
         try:
-            # For fpdf2, output returns bytes directly
-            pdf_bytes = pdf.output(dest='S')
-            # Check if it's already bytes
-            if isinstance(pdf_bytes, bytes):
-                return pdf_bytes
+            # Use output() with 'S' destination to get bytes
+            pdf_output = pdf.output(dest='S')
+            
+            # Handle different return types from fpdf2
+            if isinstance(pdf_output, bytes):
+                return pdf_output
+            elif isinstance(pdf_output, bytearray):
+                return bytes(pdf_output)  # Convert bytearray to bytes
+            elif isinstance(pdf_output, str):
+                return pdf_output.encode('latin1')  # Convert string to bytes
             else:
-                # If it's still a string (older versions), encode it
-                return bytes(pdf_bytes, 'latin1')
+                # If it's some other type, try to convert to bytes
+                return bytes(pdf_output)
         except Exception as e:
             print(f"Error generating PDF: {e}")
-            # Fallback method
-            return pdf.output()
+            # Alternative method using BytesIO
+            try:
+                buffer = io.BytesIO()
+                pdf_str = pdf.output(dest='S')
+                if isinstance(pdf_str, str):
+                    buffer.write(pdf_str.encode('latin1'))
+                elif isinstance(pdf_str, (bytes, bytearray)):
+                    buffer.write(bytes(pdf_str))
+                buffer.seek(0)
+                return buffer.getvalue()
+            except Exception as e2:
+                print(f"Fallback PDF generation also failed: {e2}")
+                return b"PDF generation failed"
     
     def create_summary_report(self, df):
         """Generate summary report PDF"""
@@ -183,17 +199,33 @@ class PDFGenerator:
                 pdf.cell(100, 6, txt=str(client)[:40], border=1)  # Truncate long names
                 pdf.cell(40, 6, txt=str(count), border=1, ln=1)
         
-        # Convert to bytes - Fixed version
+        # Convert to bytes - FIXED VERSION
         try:
-            # For fpdf2, output returns bytes directly
-            pdf_bytes = pdf.output(dest='S')
-            # Check if it's already bytes
-            if isinstance(pdf_bytes, bytes):
-                return pdf_bytes
+            # Use output() with 'S' destination to get bytes
+            pdf_output = pdf.output(dest='S')
+            
+            # Handle different return types from fpdf2
+            if isinstance(pdf_output, bytes):
+                return pdf_output
+            elif isinstance(pdf_output, bytearray):
+                return bytes(pdf_output)  # Convert bytearray to bytes
+            elif isinstance(pdf_output, str):
+                return pdf_output.encode('latin1')  # Convert string to bytes
             else:
-                # If it's still a string (older versions), encode it
-                return bytes(pdf_bytes, 'latin1')
+                # If it's some other type, try to convert to bytes
+                return bytes(pdf_output)
         except Exception as e:
             print(f"Error generating PDF: {e}")
-            # Fallback method
-            return pdf.output()
+            # Alternative method using BytesIO
+            try:
+                buffer = io.BytesIO()
+                pdf_str = pdf.output(dest='S')
+                if isinstance(pdf_str, str):
+                    buffer.write(pdf_str.encode('latin1'))
+                elif isinstance(pdf_str, (bytes, bytearray)):
+                    buffer.write(bytes(pdf_str))
+                buffer.seek(0)
+                return buffer.getvalue()
+            except Exception as e2:
+                print(f"Fallback PDF generation also failed: {e2}")
+                return b"PDF generation failed"

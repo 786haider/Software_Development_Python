@@ -20,14 +20,14 @@ st.set_page_config(
 )
 
 # Initialize components
-@st.cache_resource
+# NO caching - direct initialization
 def get_db_manager():
     return DatabaseManager()
 
-@st.cache_resource
 def get_pdf_generator():
     return PDFGenerator()
 
+# Initialize without caching
 db = get_db_manager()
 pdf_gen = get_pdf_generator()
 

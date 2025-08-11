@@ -59,10 +59,10 @@ class DatabaseManager:
         """Create default admin user"""
         cursor.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'")
         if cursor.fetchone()[0] == 0:
-            # Default password is 'admin123' - change this in production!
+            # Default password is 'Haider786' - change this in production!
             password_hash = hashlib.sha256('Haider786'.encode()).hexdigest()
             cursor.execute('''
-                INSERT INTO users (admin, password_hash, email, full_name, role)
+                INSERT INTO users (username, password_hash, email, full_name, role)
                 VALUES (?, ?, ?, ?, ?)
             ''', ('admin', password_hash, 'haiderhussain536@gmail.com', 'Haider Hussain', 'Owner'))
     
@@ -88,6 +88,9 @@ class DatabaseManager:
             conn = sqlite3.connect(self.db_name)
             cursor = conn.cursor()
             
+            # Debug: Print what we're trying to save
+            print(f"Saving order data: {order_data}")
+            
             cursor.execute('''
                 INSERT INTO orders (
                     client_name, contact_no, item_type, quantity, quality,
@@ -96,11 +99,15 @@ class DatabaseManager:
             ''', order_data)
             
             order_id = cursor.lastrowid
+            print(f"Order saved with ID: {order_id}")
+            
             conn.commit()
             conn.close()
             return order_id
         except Exception as e:
             print(f"Error saving order: {e}")
+            if conn:
+                conn.close()
             return None
     
     def get_all_orders(self, status=None):
@@ -116,9 +123,15 @@ class DatabaseManager:
                 df = pd.read_sql_query(query, conn)
             
             conn.close()
+            
+            # Debug: Print number of orders found
+            print(f"Found {len(df)} orders")
+            
             return df
         except Exception as e:
             print(f"Error fetching orders: {e}")
+            if conn:
+                conn.close()
             return pd.DataFrame()
     
     def get_order_by_id(self, order_id):
@@ -134,6 +147,8 @@ class DatabaseManager:
             return order
         except Exception as e:
             print(f"Error fetching order: {e}")
+            if conn:
+                conn.close()
             return None
     
     def update_order(self, order_id, order_data):
@@ -155,6 +170,8 @@ class DatabaseManager:
             return True
         except Exception as e:
             print(f"Error updating order: {e}")
+            if conn:
+                conn.close()
             return False
     
     def delete_order(self, order_id):
@@ -173,6 +190,8 @@ class DatabaseManager:
             return True
         except Exception as e:
             print(f"Error deleting order: {e}")
+            if conn:
+                conn.close()
             return False
     
     def search_orders(self, search_term):
@@ -197,6 +216,8 @@ class DatabaseManager:
             return df
         except Exception as e:
             print(f"Error searching orders: {e}")
+            if conn:
+                conn.close()
             return pd.DataFrame()
     
     def get_dashboard_stats(self):
@@ -225,14 +246,21 @@ class DatabaseManager:
             
             conn.close()
             
-            return {
+            stats = {
                 'total_orders': total_orders,
                 'orders_today': orders_today,
                 'orders_this_month': orders_this_month,
                 'total_clients': total_clients
             }
+            
+            # Debug: Print stats
+            print(f"Dashboard stats: {stats}")
+            
+            return stats
         except Exception as e:
             print(f"Error getting dashboard stats: {e}")
+            if conn:
+                conn.close()
             return {
                 'total_orders': 0,
                 'orders_today': 0,
@@ -248,3 +276,30 @@ class DatabaseManager:
         except Exception as e:
             print(f"Error creating backup: {e}")
             return False
+    
+    def debug_database(self):
+        """Debug function to check database contents"""
+        try:
+            conn = sqlite3.connect(self.db_name)
+            cursor = conn.cursor()
+            
+            # Check if tables exist
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = cursor.fetchall()
+            print(f"Tables in database: {tables}")
+            
+            # Check orders table structure
+            cursor.execute("PRAGMA table_info(orders);")
+            columns = cursor.fetchall()
+            print(f"Orders table columns: {columns}")
+            
+            # Check all orders
+            cursor.execute("SELECT * FROM orders;")
+            orders = cursor.fetchall()
+            print(f"All orders in database: {orders}")
+            
+            conn.close()
+        except Exception as e:
+            print(f"Debug error: {e}")
+            if conn:
+                conn.close()
